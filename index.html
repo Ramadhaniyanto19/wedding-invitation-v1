@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Undangan Pernikahan - Arif & Sinta</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{--gold:#d4a853;--gold-light:#e8c87a;--gold-dark:#b8912e;--rose:#c9918a;--bg-dark:#0a0a0a;--bg-card:rgba(255,255,255,0.03);--text-primary:#fff;--text-secondary:rgba(255,255,255,0.6);--border-color:rgba(255,255,255,0.08)}
+        html{scroll-behavior:smooth}
+        body{font-family:'Geist',sans-serif;background:var(--bg-dark);color:var(--text-primary);overflow-x:hidden;line-height:1.7}
+
+        #cover{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:var(--bg-dark);transition:opacity .8s,visibility .8s}
+        #cover.hidden{opacity:0;visibility:hidden;pointer-events:none}
+        .envelope-wrapper{text-align:center;padding:2rem}
+        .envelope-flap{width:220px;height:160px;margin:0 auto 2rem;cursor:pointer;transition:transform .3s}
+        .envelope-flap:hover{transform:scale(1.05)}
+        .envelope-flap svg{width:100%;height:100%}
+        .envelope-name{font-family:'Newsreader',serif;font-size:1.1rem;color:var(--gold-light);margin-bottom:.5rem;letter-spacing:.05em}
+        .envelope-label{font-size:.75rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.15em;margin-bottom:2.5rem}
+        .btn-open{display:inline-flex;align-items:center;gap:.75rem;padding:1rem 2.5rem;background:linear-gradient(135deg,var(--gold-dark),var(--gold),var(--gold-light));color:#0a0a0a;border:none;border-radius:100px;font-family:'Geist',sans-serif;font-size:.85rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .3s;box-shadow:0 0 30px rgba(212,168,83,.3)}
+        .btn-open:hover{transform:translateY(-2px);box-shadow:0 0 50px rgba(212,168,83,.5)}
+
+        nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(24px);background:rgba(10,10,10,.8);border-bottom:1px solid var(--border-color);transform:translateY(-100%);transition:transform .4s}
+        nav.visible{transform:translateY(0)}
+        .nav-brand{font-family:'Great Vibes',cursive;font-size:1.5rem;color:var(--gold)}
+        .nav-links{display:flex;gap:1.5rem;list-style:none}
+        .nav-links a{color:var(--text-secondary);text-decoration:none;font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;transition:color .3s}
+        .nav-links a:hover{color:var(--gold)}
+        .mobile-menu-btn{display:flex;background:none;border:none;color:var(--text-primary);font-size:1.3rem;cursor:pointer}
+        @media(min-width:768px){.mobile-menu-btn{display:none}}
+        .nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:rgba(10,10,10,.95);backdrop-filter:blur(24px);flex-direction:column;padding:1.5rem;border-bottom:1px solid var(--border-color);gap:1rem}
+        .nav-links.open{display:flex}
+        @media(min-width:768px){.nav-links{display:flex!important;position:static;background:none;border:none;padding:0;flex-direction:row}}
+
+        .music-toggle{position:fixed;bottom:2rem;right:2rem;z-index:200;width:48px;height:48px;border-radius:50%;background:rgba(212,168,83,.15);border:1px solid rgba(212,168,83,.3);color:var(--gold);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;backdrop-filter:blur(12px)}
+        .music-toggle:hover{background:rgba(212,168,83,.3)}
+        .music-toggle.playing .bar{animation:musicBar .8s ease-in-out infinite alternate}
+        .music-bars{display:flex;gap:2px;align-items:flex-end;height:16px}
+        .bar{width:3px;background:var(--gold);border-radius:2px;height:4px}
+        .bar:nth-child(1){animation-delay:0s}.bar:nth-child(2){animation-delay:.2s}.bar:nth-child(3){animation-delay:.4s}.bar:nth-child(4){animation-delay:.1s}
+        @keyframes musicBar{to{height:16px}}
+
+        section{padding:6rem 1.5rem;max-width:900px;margin:0 auto;position:relative}
+        @media(min-width:768px){section{padding:8rem 3rem}}
+        .section-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.2em;color:var(--gold);text-align:center;margin-bottom:1rem}
+        .section-title{font-family:'Newsreader',serif;font-size:2.5rem;font-weight:300;text-align:center;line-height:1.2;margin-bottom:1rem}
+        .section-subtitle{font-size:.95rem;color:var(--text-secondary);text-align:center;max-width:500px;margin:0 auto 3rem;font-weight:300}
+        @media(min-width:768px){.section-title{font-size:3.5rem}}
+        .divider{display:flex;align-items:center;justify-content:center;gap:1rem;margin:3rem 0}
+        .divider-line{width:60px;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent)}
+        .divider-icon{color:var(--gold);font-size:.8rem}
+
+        #hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-top:5rem;position:relative;overflow:hidden}
+        .hero-bg{position:absolute;inset:0;z-index:0}
+        .hero-bg img{width:100%;height:100%;object-fit:cover;opacity:.2;filter:saturate(.3)}
+        .hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(10,10,10,.3) 0%,rgba(10,10,10,.8) 60%,var(--bg-dark) 100%)}
+        .hero-content{position:relative;z-index:1}
+        .hero-ornament{width:80px;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent);margin:0 auto 2rem}
+        .hero-intro{font-size:.8rem;text-transform:uppercase;letter-spacing:.25em;color:var(--text-secondary);margin-bottom:1.5rem}
+        .hero-names{font-family:'Great Vibes',cursive;font-size:4rem;color:var(--gold-light);line-height:1.2;margin-bottom:.5rem}
+        .hero-ampersand{font-family:'Great Vibes',cursive;font-size:3rem;color:var(--gold);margin:.5rem 0}
+        .hero-date{font-family:'Newsreader',serif;font-size:1.1rem;color:var(--text-secondary);letter-spacing:.15em;margin-top:1.5rem}
+        .hero-scroll{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;color:var(--text-secondary);font-size:.65rem;text-transform:uppercase;letter-spacing:.2em;animation:float 3s ease-in-out infinite}
+        @keyframes float{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-8px)}}
+
+        #ayat{border-top:1px solid var(--border-color);border-bottom:1px solid var(--border-color);background:var(--bg-card)}
+        .ayat-text{font-family:'Newsreader',serif;font-size:1.3rem;font-style:italic;text-align:center;line-height:1.8;color:rgba(255,255,255,.8);max-width:600px;margin:0 auto 1.5rem}
+        .ayat-source{font-size:.8rem;color:var(--gold);text-align:center;letter-spacing:.05em}
+
+        .couple-grid{display:grid;grid-template-columns:1fr;gap:4rem;align-items:center}
+        @media(min-width:768px){.couple-grid{grid-template-columns:1fr auto 1fr;gap:2rem}}
+        .couple-card{text-align:center}
+        .couple-photo{width:200px;height:260px;margin:0 auto 2rem;border-radius:200px 200px 20px 20px;overflow:hidden;position:relative;border:2px solid rgba(212,168,83,.3)}
+        @media(min-width:768px){.couple-photo{width:240px;height:300px}}
+        .couple-photo img{width:100%;height:100%;object-fit:cover;transition:transform .7s}
+        .couple-photo:hover img{transform:scale(1.08)}
+        .couple-photo::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(to top,rgba(10,10,10,.6),transparent)}
+        .couple-name{font-family:'Newsreader',serif;font-size:1.8rem;font-weight:400;margin-bottom:.25rem}
+        .couple-fullname{font-family:'Newsreader',serif;font-size:1rem;color:var(--gold);font-weight:300;margin-bottom:1rem}
+        .couple-parent{font-size:.8rem;color:var(--text-secondary);line-height:1.8;white-space:pre-line}
+        .couple-ampersand{font-family:'Great Vibes',cursive;font-size:4rem;color:var(--gold);display:none}
+        @media(min-width:768px){.couple-ampersand{display:block}}
+
+        #countdown-section{border-top:1px solid var(--border-color);border-bottom:1px solid var(--border-color);background:var(--bg-card)}
+        .countdown-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;max-width:500px;margin:0 auto}
+        .countdown-item{text-align:center;padding:1.5rem .5rem;background:rgba(212,168,83,.05);border:1px solid rgba(212,168,83,.15);border-radius:16px}
+        .countdown-number{font-family:'Newsreader',serif;font-size:2.5rem;font-weight:300;color:var(--gold-light);line-height:1;margin-bottom:.5rem}
+        .countdown-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-secondary)}
+
+        .event-grid{display:grid;grid-template-columns:1fr;gap:2rem}
+        @media(min-width:768px){.event-grid{grid-template-columns:1fr 1fr;gap:2rem}}
+        .event-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:24px;padding:2.5rem 2rem;text-align:center;transition:all .5s;position:relative;overflow:hidden}
+        .event-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--gold),transparent);opacity:0;transition:opacity .5s}
+        .event-card:hover::before{opacity:1}
+        .event-card:hover{border-color:rgba(212,168,83,.2);transform:translateY(-4px);box-shadow:0 20px 40px -10px rgba(0,0,0,.5)}
+        .event-icon{width:56px;height:56px;border-radius:50%;background:rgba(212,168,83,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;color:var(--gold);font-size:1.3rem}
+        .event-name{font-family:'Newsreader',serif;font-size:1.5rem;font-weight:400;margin-bottom:1.5rem}
+        .event-detail{display:flex;align-items:center;gap:.75rem;justify-content:center;margin-bottom:.75rem;font-size:.9rem;color:var(--text-secondary)}
+        .event-detail iconify-icon{color:var(--gold);font-size:1rem}
+
+        .map-container{border-radius:20px;overflow:hidden;border:1px solid var(--border-color);margin-top:2rem;height:300px;background:rgba(255,255,255,.02)}
+        .map-container iframe{width:100%;height:100%;border:0;filter:grayscale(1) invert(.9) contrast(.8)}
+        .btn-map{display:inline-flex;align-items:center;gap:.5rem;margin-top:1.5rem;padding:.85rem 2rem;background:rgba(212,168,83,.1);border:1px solid rgba(212,168,83,.3);border-radius:100px;color:var(--gold-light);text-decoration:none;font-size:.8rem;font-weight:500;letter-spacing:.05em;transition:all .3s}
+        .btn-map:hover{background:rgba(212,168,83,.2);transform:translateY(-2px)}
+
+        .gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem}
+        @media(min-width:768px){.gallery-grid{grid-template-columns:repeat(3,1fr);gap:1rem}}
+        .gallery-item{border-radius:16px;overflow:hidden;aspect-ratio:1;position:relative;cursor:pointer}
+        .gallery-item:first-child{grid-row:span 2;aspect-ratio:auto}
+        .gallery-item img{width:100%;height:100%;object-fit:cover;transition:transform .7s}
+        .gallery-item:hover img{transform:scale(1.1)}
+        .gallery-item::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,10,.4),transparent 50%);opacity:0;transition:opacity .3s}
+        .gallery-item:hover::after{opacity:1}
+
+        #rsvp{background:var(--bg-card);border-top:1px solid var(--border-color);border-bottom:1px solid var(--border-color)}
+        .rsvp-form{max-width:450px;margin:0 auto}
+        .form-group{margin-bottom:1.25rem}
+        .form-group label{display:block;font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-secondary);margin-bottom:.5rem}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:.85rem 1.25rem;background:rgba(255,255,255,.04);border:1px solid var(--border-color);border-radius:12px;color:var(--text-primary);font-family:'Geist',sans-serif;font-size:.9rem;outline:none;transition:border-color .3s}
+        .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:rgba(212,168,83,.5)}
+        .form-group select option{background:#1a1a1a;color:#fff}
+        .form-group textarea{resize:vertical;min-height:100px}
+        .radio-group{display:flex;gap:1rem}
+        .radio-option{flex:1;position:relative}
+        .radio-option input{position:absolute;opacity:0;pointer-events:none}
+        .radio-option label{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.85rem;border:1px solid var(--border-color);border-radius:12px;cursor:pointer;transition:all .3s;text-transform:none;letter-spacing:0;font-size:.85rem}
+        .radio-option input:checked+label{border-color:var(--gold);background:rgba(212,168,83,.1);color:var(--gold-light)}
+        .btn-submit{width:100%;padding:1rem;background:linear-gradient(135deg,var(--gold-dark),var(--gold),var(--gold-light));color:#0a0a0a;border:none;border-radius:12px;font-family:'Geist',sans-serif;font-size:.85rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .3s;margin-top:.5rem}
+        .btn-submit:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(212,168,83,.3)}
+
+        .gift-cards{display:grid;grid-template-columns:1fr;gap:1.5rem;max-width:500px;margin:0 auto}
+        @media(min-width:768px){.gift-cards{grid-template-columns:1fr 1fr}}
+        .gift-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:20px;padding:2rem;text-align:center;transition:all .3s}
+        .gift-card:hover{border-color:rgba(212,168,83,.2)}
+        /* BANK FIX: container ikon + fallback teks */
+        .gift-icon-wrap{position:relative;width:56px;height:56px;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;border-radius:16px;background:rgba(212,168,83,.08);border:1px solid rgba(212,168,83,.15)}
+        .gift-icon-wrap iconify-icon{color:var(--gold);font-size:28px;position:relative;z-index:1}
+        .gift-icon-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--gold);letter-spacing:.06em;z-index:0;opacity:0;transition:opacity .3s}
+        .gift-icon-fallback.show{opacity:1}
+        .gift-bank{font-size:.7rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-secondary);margin-bottom:.75rem}
+        .gift-number{font-family:'Newsreader',serif;font-size:1.2rem;color:var(--gold-light);margin-bottom:1rem;letter-spacing:.1em}
+        .btn-copy{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1.5rem;background:rgba(212,168,83,.1);border:1px solid rgba(212,168,83,.2);border-radius:100px;color:var(--gold);font-size:.75rem;font-weight:500;cursor:pointer;transition:all .3s;font-family:'Geist',sans-serif}
+        .btn-copy:hover{background:rgba(212,168,83,.2)}
+        .btn-copy.copied{background:rgba(74,222,128,.1);border:rgba(74,222,128,.3);color:#4ade80}
+
+        .wishes-list{max-width:550px;margin:0 auto;display:flex;flex-direction:column;gap:1rem;max-height:500px;overflow-y:auto;padding-right:.5rem}
+        .wishes-list::-webkit-scrollbar{width:4px}
+        .wishes-list::-webkit-scrollbar-thumb{background:rgba(212,168,83,.3);border-radius:4px}
+        .wish-item{background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;padding:1.5rem;animation:slideUp .4s ease}
+        @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .wish-header{display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem}
+        .wish-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--gold-dark),var(--gold));display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:600;color:#0a0a0a;flex-shrink:0}
+        .wish-name{font-size:.85rem;font-weight:500}
+        .wish-time{font-size:.7rem;color:var(--text-secondary)}
+        .wish-message{font-size:.85rem;color:var(--text-secondary);line-height:1.7}
+        .wishes-form{max-width:550px;margin:2rem auto 0;display:flex;gap:.75rem}
+        .wishes-form input{flex:1;padding:.85rem 1.25rem;background:rgba(255,255,255,.04);border:1px solid var(--border-color);border-radius:12px;color:var(--text-primary);font-family:'Geist',sans-serif;font-size:.85rem;outline:none;transition:border-color .3s}
+        .wishes-form input:focus{border-color:rgba(212,168,83,.5)}
+        .wishes-form textarea{width:100%;padding:.85rem 1.25rem;background:rgba(255,255,255,.04);border:1px solid var(--border-color);border-radius:12px;color:var(--text-primary);font-family:'Geist',sans-serif;font-size:.85rem;outline:none;transition:border-color .3s;resize:none;min-height:70px;margin-top:.75rem}
+        .wishes-form textarea:focus{border-color:rgba(212,168,83,.5)}
+        .btn-wish{align-self:flex-end;padding:.85rem 1.5rem;background:linear-gradient(135deg,var(--gold-dark),var(--gold));color:#0a0a0a;border:none;border-radius:12px;font-family:'Geist',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .3s;white-space:nowrap}
+        .btn-wish:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(212,168,83,.2)}
+        .btn-wish:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+        .storage-badge{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .8rem;border-radius:100px;font-size:.65rem;letter-spacing:.05em;margin-bottom:2rem;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);color:#4ade80}
+
+        footer{text-align:center;padding:4rem 1.5rem;border-top:1px solid var(--border-color)}
+        .footer-names{font-family:'Great Vibes',cursive;font-size:2.5rem;color:var(--gold);margin-bottom:1rem}
+        .footer-text{font-size:.85rem;color:var(--text-secondary);font-weight:300}
+        .footer-heart{color:var(--rose);display:inline-block;animation:heartbeat 1.5s ease-in-out infinite}
+        @keyframes heartbeat{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+
+        .particles{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden}
+        .particle{position:absolute;width:4px;height:4px;background:var(--gold);border-radius:50%;opacity:0;animation:particleFall linear infinite}
+        @keyframes particleFall{0%{opacity:0;transform:translateY(-20px) rotate(0)}10%{opacity:.6}90%{opacity:.2}100%{opacity:0;transform:translateY(100vh) rotate(360deg)}}
+        .reveal{opacity:0;transform:translateY(30px);filter:blur(6px);transition:all .8s cubic-bezier(.16,1,.3,1)}
+        .reveal.visible{opacity:1;transform:translateY(0);filter:blur(0)}
+        .toast{position:fixed;bottom:5rem;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(212,168,83,.15);border:1px solid rgba(212,168,83,.3);backdrop-filter:blur(12px);padding:.85rem 1.5rem;border-radius:12px;color:var(--gold-light);font-size:.85rem;z-index:3000;opacity:0;transition:all .3s;pointer-events:none}
+        .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+        .lightbox{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.95);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .3s;cursor:pointer}
+        .lightbox.open{opacity:1;visibility:visible}
+        .lightbox img{max-width:90%;max-height:85vh;object-fit:contain;border-radius:12px;transform:scale(.9);transition:transform .4s}
+        .lightbox.open img{transform:scale(1)}
+        .lightbox-close{position:absolute;top:1.5rem;right:1.5rem;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .3s}
+        .lightbox-close:hover{background:rgba(255,255,255,.2)}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @media(max-width:767px){.hero-names{font-size:3rem}.hero-ampersand{font-size:2.2rem}.couple-ampersand{display:block!important;margin:0;font-size:3rem}.couple-grid{gap:2rem}.countdown-number{font-size:2rem}.wishes-form{flex-direction:column}}
+    </style>
+</head>
+<body>
+    <div id="cover">
+        <div class="envelope-wrapper">
+            <div class="envelope-flap" onclick="openInvitation()">
+                <svg viewBox="0 0 220 160" fill="none"><rect x="10" y="40" width="200" height="120" rx="8" fill="rgba(212,168,83,0.08)" stroke="rgba(212,168,83,0.3)" stroke-width="1"/><path d="M10 48 L110 110 L210 48" stroke="rgba(212,168,83,0.5)" stroke-width="1.5" fill="none"/><path d="M10 40 L110 100 L210 40" fill="rgba(212,168,83,0.1)" stroke="rgba(212,168,83,0.4)" stroke-width="1"/><circle cx="110" cy="85" r="15" fill="rgba(212,168,83,0.15)" stroke="rgba(212,168,83,0.4)" stroke-width="0.8"/><text x="110" y="89" text-anchor="middle" fill="rgba(212,168,83,0.7)" font-family="Great Vibes" font-size="14">A & S</text></svg>
+            </div>
+            <p class="envelope-name" id="envelopeName">Kepada Yth.<br>Bapak/Ibu/Saudara/i</p>
+            <p class="envelope-label">Anda diundang ke pernikahan</p>
+            <button class="btn-open" onclick="openInvitation()"><iconify-icon icon="solar:letter-opened-bold-duotone"></iconify-icon> Buka Undangan</button>
+        </div>
+    </div>
+
+    <div class="particles" id="particles"></div>
+
+    <nav id="navbar">
+        <span class="nav-brand" id="navBrand">A & S</span>
+        <button class="mobile-menu-btn" onclick="toggleMenu()"><iconify-icon icon="solar:hamburger-menu-linear"></iconify-icon></button>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#mempelai" onclick="closeMenu()">Mempelai</a></li>
+            <li><a href="#acara" onclick="closeMenu()">Acara</a></li>
+            <li><a href="#galeri" onclick="closeMenu()">Galeri</a></li>
+            <li><a href="#rsvp" onclick="closeMenu()">RSVP</a></li>
+            <li><a href="#ucapan" onclick="closeMenu()">Ucapan</a></li>
+        </ul>
+    </nav>
+
+    <button class="music-toggle" id="musicToggle" onclick="toggleMusic()"><div class="music-bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div></button>
+
+    <section id="hero">
+        <div class="hero-bg"><img id="heroBgImg" src="https://picsum.photos/seed/wedding-hero-elegant/1600/900.jpg" alt="Hero"></div>
+        <div class="hero-content">
+            <div class="hero-ornament"></div>
+            <p class="hero-intro" id="heroIntro">The Wedding of</p>
+            <h1 class="hero-names" id="heroGroom">Arif</h1>
+            <div class="hero-ampersand">&</div>
+            <h1 class="hero-names" id="heroBride">Sinta</h1>
+            <div class="divider" style="margin:2rem 0"><div class="divider-line"></div><iconify-icon class="divider-icon" icon="solar:star-bold-duotone"></iconify-icon><div class="divider-line"></div></div>
+            <p class="hero-date" id="heroDateDisplay">12 · 08 · 2026</p>
+        </div>
+        <div class="hero-scroll"><span>Scroll</span><iconify-icon icon="solar:alt-arrow-down-linear" style="font-size:1rem"></iconify-icon></div>
+    </section>
+
+    <section id="ayat" class="reveal">
+        <p class="section-label" id="ayatBismillah">Bismillahirrahmanirrahim</p>
+        <p class="ayat-text" id="ayatText">"Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri, supaya kamu merasa tenteram kepadanya, dan dijadikan-Nya di antaramu rasa kasih dan sayang."</p>
+        <p class="ayat-source" id="ayatSource">— QS. Ar-Rum: 21 —</p>
+    </section>
+
+    <section id="mempelai">
+        <p class="section-label reveal">Insya Allah</p>
+        <h2 class="section-title reveal">Mempelai</h2>
+        <div class="divider reveal"><div class="divider-line"></div><iconify-icon class="divider-icon" icon="solar:star-bold-duotone"></iconify-icon><div class="divider-line"></div></div>
+        <div class="couple-grid">
+            <div class="couple-card reveal">
+                <div class="couple-photo"><img id="groomPhoto" src="https://picsum.photos/seed/groom-portrait-classy/480/600.jpg" alt="Mempelai Pria"></div>
+                <h3 class="couple-name" id="groomName">Muhammad Arif</h3>
+                <p class="couple-fullname" id="groomFullname">Arif Hidayat, S.Kom</p>
+                <p class="couple-parent" id="groomParent">Putra kedua dari\nBapak H. Ahmad Hidayat\n& Ibu Hj. Nurhasanah</p>
+            </div>
+            <div class="couple-ampersand reveal">&</div>
+            <div class="couple-card reveal">
+                <div class="couple-photo"><img id="bridePhoto" src="https://picsum.photos/seed/bride-portrait-elegant/480/600.jpg" alt="Mempelai Wanita"></div>
+                <h3 class="couple-name" id="brideName">Sinta Dewi</h3>
+                <p class="couple-fullname" id="brideFullname">Sinta Dewi Rahmawati, S.Pd</p>
+                <p class="couple-parent" id="brideParent">Putri pertama dari\nBapak H. Dedi Rahmawan\n& Ibu Hj. Rina Sulistyowati</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="countdown-section" class="reveal">
+        <p class="section-label">Menuju Hari Bahagia</p>
+        <div class="countdown-grid"><div class="countdown-item"><div class="countdown-number" id="days">00</div><div class="countdown-label">Hari</div></div><div class="countdown-item"><div class="countdown-number" id="hours">00</div><div class="countdown-label">Jam</div></div><div class="countdown-item"><div class="countdown-number" id="minutes">00</div><div class="countdown-label">Menit</div></div><div class="countdown-item"><div class="countdown-number" id="seconds">00</div><div class="countdown-label">Detik</div></div></div>
+    </section>
+
+    <section id="acara">
+        <p class="section-label reveal">Rangkaian Acara</p>
+        <h2 class="section-title reveal">Jadwal Resepsi</h2>
+        <p class="section-subtitle reveal">Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir.</p>
+        <div class="event-grid">
+            <div class="event-card reveal">
+                <div class="event-icon"><iconify-icon icon="solar:moon-stars-bold-duotone"></iconify-icon></div>
+                <h3 class="event-name" id="akadName">Akad Nikah</h3>
+                <div class="event-detail"><iconify-icon icon="solar:calendar-bold-duotone"></iconify-icon><span id="akadDate">Selasa, 12 Agustus 2026</span></div>
+                <div class="event-detail"><iconify-icon icon="solar:clock-circle-bold-duotone"></iconify-icon><span id="akadTime">08.00 - 10.00 WIB</span></div>
+                <div class="event-detail"><iconify-icon icon="solar:map-point-bold-duotone"></iconify-icon><span id="akadVenue">Masjid Agung Al-Azhar</span></div>
+            </div>
+            <div class="event-card reveal">
+                <div class="event-icon"><iconify-icon icon="solar:cup-star-bold-duotone"></iconify-icon></div>
+                <h3 class="event-name" id="resepsiName">Resepsi</h3>
+                <div class="event-detail"><iconify-icon icon="solar:calendar-bold-duotone"></iconify-icon><span id="resepsiDate">Selasa, 12 Agustus 2026</span></div>
+                <div class="event-detail"><iconify-icon icon="solar:clock-circle-bold-duotone"></iconify-icon><span id="resepsiTime">11.00 - 14.00 WIB</span></div>
+                <div class="event-detail"><iconify-icon icon="solar:map-point-bold-duotone"></iconify-icon><span id="resepsiVenue">Ballroom Hotel Indonesia Kempinski</span></div>
+            </div>
+        </div>
+        <div class="map-container reveal"><iframe id="mapFrame" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.290420883765!2d106.7988323!3d-6.2297465!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f3e945e34b9d%3A0x5371bf0fdad786a2!2sNational%20Monument!5e0!3m2!1sen!2sid!4v1700000000000!5m2!1sen!2sid" allowfullscreen="" loading="lazy"></iframe></div>
+        <div style="text-align:center" class="reveal"><a id="mapLink" href="https://maps.google.com" target="_blank" class="btn-map"><iconify-icon icon="solar:map-arrow-right-bold-duotone"></iconify-icon> Buka Peta</a></div>
+    </section>
+
+    <section id="galeri">
+        <p class="section-label reveal">Momen Bahagia</p>
+        <h2 class="section-title reveal">Galeri Foto</h2>
+        <div class="divider reveal"><div class="divider-line"></div><iconify-icon class="divider-icon" icon="solar:camera-bold-duotone"></iconify-icon><div class="divider-line"></div></div>
+        <div class="gallery-grid reveal" id="galleryGrid"></div>
+    </section>
+
+    <section id="rsvp">
+        <p class="section-label reveal">Konfirmasi Kehadiran</p>
+        <h2 class="section-title reveal">RSVP</h2>
+        <p class="section-subtitle reveal">Mohon konfirmasi kehadiran Anda sebelum <span id="rsvpDeadline">1 Agustus 2026</span></p>
+        <form class="rsvp-form reveal" onsubmit="submitRSVP(event)">
+            <div class="form-group"><label>Nama Lengkap</label><input type="text" id="rsvpName" placeholder="Masukkan nama Anda" required></div>
+            <div class="form-group"><label>Konfirmasi Kehadiran</label><div class="radio-group"><div class="radio-option"><input type="radio" name="attendance" id="hadir" value="Hadir" checked><label for="hadir"><iconify-icon icon="solar:check-circle-bold-duotone"></iconify-icon> Hadir</label></div><div class="radio-option"><input type="radio" name="attendance" id="tidak" value="Tidak Hadir"><label for="tidak"><iconify-icon icon="solar:close-circle-bold-duotone"></iconify-icon> Tidak Hadir</label></div></div></div>
+            <div class="form-group"><label>Jumlah Tamu</label><select id="rsvpGuests"><option value="1">1 Orang</option><option value="2" selected>2 Orang</option><option value="3">3 Orang</option><option value="4">4 Orang</option><option value="5">5 Orang</option></select></div>
+            <div class="form-group"><label>Pesan untuk Mempelai</label><textarea id="rsvpMessage" placeholder="Tulis pesan atau ucapan Anda..."></textarea></div>
+            <button type="submit" class="btn-submit">Kirim Konfirmasi</button>
+        </form>
+    </section>
+
+    <section id="gift">
+        <p class="section-label reveal">Amplop Digital</p>
+        <h2 class="section-title reveal">Wedding Gift</h2>
+        <p class="section-subtitle reveal">Doa restu Anda merupakan karunia yang sangat berarti. Jika ingin memberikan tanda kasih, kami menyediakan amplop digital.</p>
+        <div class="gift-cards reveal" id="giftCards"></div>
+    </section>
+
+    <section id="ucapan">
+        <p class="section-label reveal">Ucapan & Doa</p>
+        <h2 class="section-title reveal">Kirim Ucapan</h2>
+        <div class="divider reveal"><div class="divider-line"></div><iconify-icon class="divider-icon" icon="solar:heart-bold-duotone"></iconify-icon><div class="divider-line"></div></div>
+        <div style="text-align:center" class="reveal"><span class="storage-badge"><iconify-icon icon="solar:database-bold-duotone"></iconify-icon> Real-time · Sinkron ke semua tamu</span></div>
+        <div class="wishes-list reveal" id="wishesList"><div style="text-align:center;padding:2rem;color:var(--text-secondary);font-size:.85rem"><iconify-icon icon="solar:refresh-circle-bold-duotone" style="font-size:1.5rem;display:block;margin:0 auto .5rem;animation:spin 1s linear infinite"></iconify-icon>Memuat ucapan...</div></div>
+        <form class="wishes-form reveal" onsubmit="submitWish(event)" id="wishForm">
+            <div style="flex:1"><input type="text" id="wishName" placeholder="Nama Anda" required><textarea id="wishMessage" placeholder="Tulis ucapan & doa..." required></textarea></div>
+            <button type="submit" class="btn-wish" id="btnWish"><iconify-icon icon="solar:plain-bold-duotone"></iconify-icon> Kirim</button>
+        </form>
+    </section>
+
+    <footer>
+        <p class="footer-names reveal" id="footerNames">Arif & Sinta</p>
+        <p class="footer-text reveal">Terima kasih atas doa dan restu yang diberikan<br><span class="footer-heart"><iconify-icon icon="solar:heart-bold" style="font-size:.9rem"></iconify-icon></span><br><br>© 2026 — Made with love</p>
+    </footer>
+
+    <div class="toast" id="toast"></div>
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()"><button class="lightbox-close"><iconify-icon icon="solar:close-circle-linear"></iconify-icon></button><img id="lightboxImg" src="" alt="Gallery"></div>
+
+<script>
+/* ===================== FIREBASE ===================== */
+var FIREBASE_CONFIG={apiKey:"AIzaSyBP2QS3YDzY8gc7WdlLQTcp4wNBfyAlBKI",authDomain:"wedding-test-908e5.firebaseapp.com",projectId:"wedding-test-908e5",storageBucket:"wedding-test-908e5.firebasestorage.app",messagingSenderId:"884537701450",appId:"1:884537701450:web:ca074b829f7591d9d722b3",databaseURL:"https://wedding-test-908e5-default-rtdb.asia-southeast1.firebasedatabase.app"};
+firebase.initializeApp(FIREBASE_CONFIG);
+var db=firebase.database(),configRef=db.ref('config'),wishesRef=db.ref('wishes'),rsvpRef=db.ref('rsvp');
+
+/* ===================== BANK FIX: Daftar bank & fungsi lookup icon — sama persis dari dashboard ===================== */
+var BANK_LIST = [
+    {v:'Bank Central Asia (BCA)',l:'Bank Central Asia (BCA)',i:'arcticons:bca-mobile'},
+    {v:'Bank Mandiri',l:'Bank Mandiri',i:'arcticons:livin-by-mandiri'},
+    {v:'Bank Rakyat Indonesia (BRI)',l:'Bank Rakyat Indonesia (BRI)',i:'mdi:bank'},
+    {v:'Bank Negara Indonesia (BNI)',l:'Bank Negara Indonesia (BNI)',i:'arcticons:bni-mobile-banking'},
+    {v:'Bank Syariah Indonesia (BSI)',l:'Bank Syariah Indonesia (BSI)',i:'arcticons:bsi-mobile'},
+    {v:'SeaBank',l:'SeaBank',i:'arcticons:seabank'},
+    {v:'Bank Jago',l:'Bank Jago',i:'arcticons:jago'},
+    {v:'Blu by BCA Digital',l:'Blu by BCA Digital',i:'mdi:bank'}
+];
+function bankIcon(name){var b=BANK_LIST.find(function(x){return x.v===name;});return b?b.i:'solar:wallet-bold-duotone';}
+
+/* BANK FIX: Fallback teks jika icon gagal load */
+function bankAbbr(name){
+    if(!name)return'BK';
+    var clean=name.replace(/Bank |Syariah |Indonesia |\(.*?\)|by |Digital /gi,'').trim();
+    var words=clean.split(/\s+/).filter(function(w){return w.length>0});
+    if(words.length>=2)return(words[0][0]+words[1][0]).toUpperCase();
+    return clean.slice(0,3).toUpperCase();
+}
+
+/* ===================== DEFAULT CONFIG ===================== */
+/* BANK FIX: field icon dihapus — akan selalu di-lookup via bankIcon() saat render */
+var DEFAULT_CONFIG={
+    hero:{intro:"The Wedding of",groom:"Arif",bride:"Sinta",dateDisplay:"12 · 08 · 2026",bgImage:"https://picsum.photos/seed/wedding-hero-elegant/1600/900.jpg",weddingDate:"2026-08-12T08:00:00+07:00"},
+    ayat:{bismillah:"Bismillahirrahmanirrahim",text:'"Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri, supaya kamu merasa tenteram kepadanya, dan dijadikan-Nya di antaramu rasa kasih dan sayang."',source:"— QS. Ar-Rum: 21 —"},
+    groom:{name:"Muhammad Arif",fullname:"Arif Hidayat, S.Kom",parent:"Putra kedua dari\nBapak H. Ahmad Hidayat\n& Ibu Hj. Nurhasanah",photo:"https://picsum.photos/seed/groom-portrait-classy/480/600.jpg"},
+    bride:{name:"Sinta Dewi",fullname:"Sinta Dewi Rahmawati, S.Pd",parent:"Putri pertama dari\nBapak H. Dedi Rahmawan\n& Ibu Hj. Rina Sulistyowati",photo:"https://picsum.photos/seed/bride-portrait-elegant/480/600.jpg"},
+    events:{akad:{name:"Akad Nikah",date:"Selasa, 12 Agustus 2026",time:"08.00 - 10.00 WIB",venue:"Masjid Agung Al-Azhar"},resepsi:{name:"Resepsi",date:"Selasa, 12 Agustus 2026",time:"11.00 - 14.00 WIB",venue:"Ballroom Hotel Indonesia Kempinski"}},
+    gallery:["https://picsum.photos/seed/wedding-couple-garden/600/1200.jpg","https://picsum.photos/seed/prewedding-romantic/600/600.jpg","https://picsum.photos/seed/wedding-rings-gold/600/600.jpg","https://picsum.photos/seed/couple-sunset-beach/600/600.jpg","https://picsum.photos/seed/wedding-bouquet-pink/600/600.jpg"],
+    /* BANK FIX: tidak ada field icon — icon selalu dari bankIcon(g.bank) */
+    gifts:[
+        {bank:"Bank Central Asia (BCA)",number:"8320 • 5678 • 90",rawNumber:"8320567890",holder:"a.n. Muhammad Arif Hidayat"},
+        {bank:"Bank Mandiri",number:"1280 • 0987 • 6543",rawNumber:"128009876543",holder:"a.n. Sinta Dewi Rahmawati"}
+    ],
+    map:{embed:"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.290420883765!2d106.7988323!3d-6.2297465!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f3e945e34b9d%3A0x5371bf0fdad786a2!2sNational%20Monument!5e0!3m2!1sen!2sid!4v1700000000000!5m2!1sen!2sid",link:"https://maps.google.com"},
+    rsvpDeadline:"1 Agustus 2026",
+    musicUrl:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+};
+
+var currentConfig=JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+
+/* ===================== UTILS ===================== */
+function escapeHtml(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
+function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},3000)}
+function timeAgo(ts){var s=Math.floor((Date.now()-ts)/1000);if(s<60)return'Baru saja';if(s<3600)return Math.floor(s/60)+' menit lalu';if(s<86400)return Math.floor(s/3600)+' jam lalu';return Math.floor(s/86400)+' hari lalu'}
+
+/* ===================== CONFIG MERGE ===================== */
+function mergeConfig(snap){
+    if(!snap.val())return;
+    var v=snap.val();
+    currentConfig=Object.assign({},DEFAULT_CONFIG,v,{
+        events:Object.assign({},DEFAULT_CONFIG.events,v.events||{}),
+        hero:Object.assign({},DEFAULT_CONFIG.hero,v.hero||{}),
+        ayat:Object.assign({},DEFAULT_CONFIG.ayat,v.ayat||{}),
+        groom:Object.assign({},DEFAULT_CONFIG.groom,v.groom||{}),
+        bride:Object.assign({},DEFAULT_CONFIG.bride,v.bride||{}),
+        map:Object.assign({},DEFAULT_CONFIG.map,v.map||{})
+    });
+}
+
+/* ===================== RENDER ===================== */
+function renderWeddingPage(c){
+    var $=function(id){return document.getElementById(id)};
+    $('heroIntro').textContent=c.hero.intro;
+    $('heroGroom').textContent=c.hero.groom;
+    $('heroBride').textContent=c.hero.bride;
+    $('heroDateDisplay').textContent=c.hero.dateDisplay;
+    if(c.hero.bgImage)$('heroBgImg').src=c.hero.bgImage;
+    $('navBrand').textContent=c.hero.groom+' & '+c.hero.bride;
+    $('ayatBismillah').textContent=c.ayat.bismillah;
+    $('ayatText').textContent=c.ayat.text;
+    $('ayatSource').textContent=c.ayat.source;
+    $('groomName').textContent=c.groom.name;
+    $('groomFullname').textContent=c.groom.fullname;
+    $('groomParent').textContent=c.groom.parent;
+    $('groomPhoto').src=c.groom.photo;
+    $('brideName').textContent=c.bride.name;
+    $('brideFullname').textContent=c.bride.fullname;
+    $('brideParent').textContent=c.bride.parent;
+    $('bridePhoto').src=c.bride.photo;
+    $('akadName').textContent=c.events.akad.name;
+    $('akadDate').textContent=c.events.akad.date;
+    $('akadTime').textContent=c.events.akad.time;
+    $('akadVenue').textContent=c.events.akad.venue;
+    $('resepsiName').textContent=c.events.resepsi.name;
+    $('resepsiDate').textContent=c.events.resepsi.date;
+    $('resepsiTime').textContent=c.events.resepsi.time;
+    $('resepsiVenue').textContent=c.events.resepsi.venue;
+    $('mapFrame').src=c.map.embed;
+    $('mapLink').href=c.map.link;
+    $('rsvpDeadline').textContent=c.rsvpDeadline;
+
+    $('galleryGrid').innerHTML=(c.gallery||[]).map(function(u,i){
+        return'<div class="gallery-item" onclick="openLightbox(this)" style="'+(i===0?'grid-row:span 2;aspect-ratio:auto':'')+'"><img src="'+escapeHtml(u)+'" alt="Gallery"></div>';
+    }).join('');
+
+    /* BANK FIX: Icon selalu di-lookup dari bankIcon() berdasarkan g.bank —
+       bukan dari g.icon yang tersimpan di Firebase.
+       Juga ada fallback teks jika iconify gagal load dari API. */
+    $('giftCards').innerHTML=(c.gifts||[]).map(function(g){
+        var icon=bankIcon(g.bank);
+        var abbr=bankAbbr(g.bank);
+        return'<div class="gift-card">'+
+            '<div class="gift-icon-wrap">'+
+                '<iconify-icon icon="'+escapeHtml(icon)+'" width="28" height="28"></iconify-icon>'+
+                '<span class="gift-icon-fallback">'+escapeHtml(abbr)+'</span>'+
+            '</div>'+
+            '<p class="gift-bank">'+escapeHtml(g.bank)+'</p>'+
+            '<p class="gift-number">'+escapeHtml(g.number)+'</p>'+
+            '<p style="font-size:.8rem;color:var(--text-secondary);margin-bottom:1.25rem">'+escapeHtml(g.holder)+'</p>'+
+            '<button class="btn-copy" onclick="copyToClipboard(\''+escapeHtml(g.rawNumber)+'\',this)"><iconify-icon icon="solar:copy-bold-duotone"></iconify-icon> Salin Nomor</button>'+
+        '</div>';
+    }).join('');
+
+    /* BANK FIX: Cek 3 detik setelah render — kalau iconify gagal, tampilkan teks fallback */
+    setTimeout(fixBankIcons,3000);
+
+    $('footerNames').textContent=c.hero.groom+' & '+c.hero.bride;
+}
+
+/* BANK FIX: Jika iconify-icon gagal fetch dari API, sembunyikan icon & tampilkan teks */
+function fixBankIcons(){
+    var wraps=document.querySelectorAll('.gift-icon-wrap');
+    wraps.forEach(function(wrap){
+        var iconEl=wrap.querySelector('iconify-icon');
+        var fallbackEl=wrap.querySelector('.gift-icon-fallback');
+        if(!iconEl||!fallbackEl)return;
+        var shadow=iconEl.shadowRoot;
+        var hasSvg=shadow&&shadow.querySelector('svg');
+        if(!hasSvg){
+            iconEl.style.display='none';
+            fallbackEl.classList.add('show');
+        }
+    });
+}
+
+/* ===================== FIREBASE LISTENER (satu saja, tidak duplikat) ===================== */
+configRef.once('value').then(function(s){
+    mergeConfig(s);
+    renderWeddingPage(currentConfig);
+}).catch(function(){
+    renderWeddingPage(currentConfig);
+});
+
+configRef.on('value',function(s){
+    var oldMusicUrl=currentConfig.musicUrl;
+    mergeConfig(s);
+    renderWeddingPage(currentConfig);
+
+    /* Update audio jika URL musik berubah dari dashboard */
+    var newMusicUrl=currentConfig.musicUrl;
+    if(newMusicUrl&&audio&&oldMusicUrl!==newMusicUrl){
+        var wasPlaying=isPlaying;
+        audio.src=newMusicUrl;
+        audio.loop=true;
+        audio.volume=0.3;
+        if(wasPlaying){audio.play().catch(function(){});}
+    }
+});
+
+/* ===================== WISHES ===================== */
+function renderWish(w){
+    var i=w.name.split(' ').map(function(n){return n[0]}).join('').toUpperCase().slice(0,2);
+    return'<div class="wish-item"><div class="wish-header"><div class="wish-avatar">'+i+'</div><div><div class="wish-name">'+escapeHtml(w.name)+'</div><div class="wish-time">'+timeAgo(w.timestamp)+'</div></div></div><p class="wish-message">'+escapeHtml(w.message)+'</p></div>';
+}
+wishesRef.orderByChild('timestamp').on('value',function(s){
+    var l=document.getElementById('wishesList'),d=s.val();
+    if(!d){l.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text-secondary);font-size:.85rem">Belum ada ucapan 💐</div>';return}
+    l.innerHTML=Object.values(d).sort(function(a,b){return b.timestamp-a.timestamp}).map(renderWish).join('');
+});
+
+function submitWish(e){
+    e.preventDefault();
+    var n=document.getElementById('wishName').value.trim(),m=document.getElementById('wishMessage').value.trim();
+    if(!n||!m)return;
+    var b=document.getElementById('btnWish');
+    b.disabled=true;
+    b.innerHTML='<iconify-icon icon="solar:refresh-bold-duotone" style="animation:spin .8s linear infinite"></iconify-icon> Kirim...';
+    wishesRef.push({name:n,message:m,timestamp:Date.now()}).then(function(){
+        document.getElementById('wishName').value='';
+        document.getElementById('wishMessage').value='';
+        showToast('Ucapan berhasil terkirim! ✨');
+    }).catch(function(er){showToast('Gagal: '+er.message)}).finally(function(){
+        b.disabled=false;
+        b.innerHTML='<iconify-icon icon="solar:plain-bold-duotone"></iconify-icon> Kirim';
+    });
+}
+
+function submitRSVP(e){
+    e.preventDefault();
+    var d={name:document.getElementById('rsvpName').value,attendance:document.querySelector('input[name="attendance"]:checked').value,guests:document.getElementById('rsvpGuests').value,message:document.getElementById('rsvpMessage').value,timestamp:Date.now()};
+    rsvpRef.push(d);
+    showToast('Terima kasih '+d.name+'! Konfirmasi "'+d.attendance+'" ('+d.guests+' orang) tersimpan.');
+    e.target.reset();
+    document.querySelector('#hadir').checked=true;
+}
+
+/* ===================== TAMU DARI URL ===================== */
+var urlParams=new URLSearchParams(window.location.search);
+var guestSlug=urlParams.get('to');
+if(guestSlug){
+    db.ref('config/guests/'+guestSlug).once('value').then(function(snap){
+        if(snap.val()){
+            document.getElementById('envelopeName').innerHTML='Kepada Yth.<br>'+escapeHtml(snap.val());
+        }
+    });
+}
+
+/* ===================== AUDIO / MUSIK ===================== */
+var audio;
+var isPlaying=false;
+
+function ensureAudio(){
+    var url=currentConfig.musicUrl||'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+    if(!audio){
+        audio=new Audio(url);
+        audio.loop=true;
+        audio.volume=0.3;
+        audio.preload='auto';
+    }else if(audio.src!==url){
+        audio.src=url;
+        audio.loop=true;
+        audio.volume=0.3;
+    }
+    return audio;
+}
+
+function toggleMusic(){
+    try{
+        var a=ensureAudio();
+        var btn=document.getElementById('musicToggle');
+        if(isPlaying){a.pause();btn.classList.remove('playing');}
+        else{a.play().then(function(){btn.classList.add('playing')}).catch(function(){});}
+        isPlaying=!isPlaying;
+    }catch(e){console.error('toggleMusic error:',e)}
+}
+
+/* ===================== OPEN INVITATION ===================== */
+function openInvitation(){
+    document.getElementById('cover').classList.add('hidden');
+    document.getElementById('navbar').classList.add('visible');
+    document.body.style.overflow='auto';
+    createParticles();
+    initReveal();
+
+    /* Auto-play musik — ensureAudio() wajib dipanggil dulu supaya object Audio exist */
+    try{
+        var a=ensureAudio();
+        a.play().then(function(){
+            isPlaying=true;
+            document.getElementById('musicToggle').classList.add('playing');
+        }).catch(function(err){
+            console.log('Auto-play diblokir browser, klik tombol musik untuk memutar.');
+        });
+    }catch(e){
+        console.log('Gagal auto-play:',e);
+    }
+}
+
+/* ===================== FITUR LAINNYA ===================== */
+function toggleMenu(){document.getElementById('navLinks').classList.toggle('open')}
+function closeMenu(){document.getElementById('navLinks').classList.remove('open')}
+
+var weddingDateMs=new Date(currentConfig.hero.weddingDate||'2026-08-12T08:00:00+07:00').getTime();
+configRef.child('hero/weddingDate').on('value',function(s){if(s.val())weddingDateMs=new Date(s.val()).getTime()});
+function updateCountdown(){
+    var d=weddingDateMs-Date.now();
+    if(d<=0){['days','hours','minutes','seconds'].forEach(function(id){document.getElementById(id).textContent='00'});return}
+    document.getElementById('days').textContent=String(Math.floor(d/864e5)).padStart(2,'0');
+    document.getElementById('hours').textContent=String(Math.floor(d%864e5/36e5)).padStart(2,'0');
+    document.getElementById('minutes').textContent=String(Math.floor(d%36e5/6e4)).padStart(2,'0');
+    document.getElementById('seconds').textContent=String(Math.floor(d%6e4/1e3)).padStart(2,'0');
+}
+updateCountdown();setInterval(updateCountdown,1000);
+
+function createParticles(){
+    var c=document.getElementById('particles');
+    for(var i=0;i<25;i++){
+        var p=document.createElement('div');p.className='particle';
+        p.style.left=Math.random()*100+'%';
+        p.style.width=(Math.random()*3+2)+'px';p.style.height=p.style.width;
+        p.style.animationDuration=(Math.random()*10+8)+'s';p.style.animationDelay=(Math.random()*10)+'s';
+        c.appendChild(p);
+    }
+}
+
+function initReveal(){
+    var o=new IntersectionObserver(function(entries){
+        entries.forEach(function(en){if(en.isIntersecting)en.target.classList.add('visible')});
+    },{threshold:0.1,rootMargin:'0px 0px -50px 0px'});
+    document.querySelectorAll('.reveal').forEach(function(el){o.observe(el)});
+}
+
+function openLightbox(el){
+    document.getElementById('lightboxImg').src=el.querySelector('img').src;
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow='hidden';
+}
+function closeLightbox(){
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow='auto';
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox()});
+
+function copyToClipboard(t,b){
+    navigator.clipboard.writeText(t).then(function(){
+        b.classList.add('copied');
+        b.innerHTML='<iconify-icon icon="solar:check-circle-bold-duotone"></iconify-icon> Tersalin!';
+        showToast('Nomor rekening disalin!');
+        setTimeout(function(){b.classList.remove('copied');b.innerHTML='<iconify-icon icon="solar:copy-bold-duotone"></iconify-icon> Salin Nomor'},2500);
+    });
+}
+
+window.addEventListener('scroll',function(){
+    if(window.scrollY>100)document.getElementById('navbar').classList.add('visible');
+});
+document.body.style.overflow='hidden';
+</script>
+</body>
+</html>
